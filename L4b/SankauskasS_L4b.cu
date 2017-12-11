@@ -4,21 +4,21 @@
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 
-#define count 11				//giju skaicius
-#define masyvuCount 5			//masyvu skaicius
+#define count 11	// giju skaicius
+#define masyvuCount 5 // masyvu skaicius
 
 struct Item
 {
-	char name[20 * count];	// pavadinimas
-	int amount;				// kiekis
-	int eilNr;				// eiles numeris masyve
-	double price;			// kaina
+	char name[20 * count];
+	int amount; 
+	int eilNr; // eiles numeris masyve
+	double price;
 };
 
 struct Supplier{
-	struct Item items[count]; 		// prekiu masyvas
-	int itemCount;					// prekiu skaicius
-	char supplier[20];				// tiekejo pavadinimas
+	struct Item items[count];
+	int itemCount;
+	char supplier[20];
 };
 
 void readFile(thrust::host_vector<Supplier> &suppliers);
@@ -31,18 +31,27 @@ Item addItems(thrust::device_vector<Supplier> suppliers, int index);
 
 int main(int argc, char *argv[])
 {
-	thrust::host_vector<Supplier> suppliers(masyvuCount); //CPU vektorius
-	readFile(suppliers);	//failo skaitymas
-	printSuppliers(suppliers); //duomenu spausdinimas
-	thrust::device_vector<Supplier> s = suppliers; // GPU vektoriaus sukurimas ir duomenu kopija i ji
-	thrust::device_vector<Item> bendrasCuda(count); // bendro vektoriaus sukurimas GPU 
+	//CPU vektorius
+	thrust::host_vector<Supplier> suppliers(masyvuCount);
+	readFile(suppliers);
+	//pradiniu duomenu spausdinimas
+	printSuppliers(suppliers);
+	
+ 	// GPU vektoriaus sukurimas ir duomenu kopija i ji
+	thrust::device_vector<Supplier> s = suppliers;
+	// bendro vektoriaus sukurimas GPU 
+	thrust::device_vector<Item> bendrasCuda(count);
+	
 	for (int i = 0; i < count; i++){
-		bendrasCuda[i] = addItems(s, i);	// sudejimas
+		bendrasCuda[i] = addItems(s, i);
 	}
-	thrust::host_vector<Item> bendras = bendrasCuda;	// GPU kopija i CPU vektoriu
-	printItemsResults(bendras);	// rezultatu spausdinimas
-	printFile(bendras);	// rezultatu spausdinimas i faila
-	printf("PABAIGA \n");
+
+	// GPU kopija i CPU vektoriu
+	thrust::host_vector<Item> bendras = bendrasCuda;
+	
+	printItemsResults(bendras);
+	printFile(bendras);
+	printf("Done \n");
 	return 0;
 }
 
